@@ -1,8 +1,8 @@
-// ==UserScript== 
+// ==UserScript==
 // @name         续火花助手
 // @namespace    http://tampermonkey.net/
 // @version      4.0.1
-// @description  每天自动发送续火消息，支持多用户、火花天数识别、自动重试、后端回调、历史日志等等
+// @description  每天自动发送续火消息，支持多用户、火花天数识别、自动重试、后端回调、历史日志。
 // @author       zk26
 // @match        https://www.douyin.com/chat*
 // @icon         https://i0.hdslb.com/bfs/openplatform/fb882fb0f7380d7464cd00ed68ff73d194edea0e.png
@@ -1838,4 +1838,4 @@
   window.__DFH_APP = app;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => app.init());
   else app.init();
-})();
+})()

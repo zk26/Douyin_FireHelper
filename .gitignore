@@ -1,0 +1,26 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Temp
+*.tmp
+*.bak
+*.backup
+
+# Old versions
+*V1*
+*V3*副本*
+
+# Dev docs
+*.md
+!README.md

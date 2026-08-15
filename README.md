@@ -41,13 +41,9 @@
 
 ### 2. 安装脚本
 
-**方式一：Greasy Fork（推荐）**
+**方式一：代码区复制 user.js 文件**
 
-前往 [Greasy Fork 安装页面](https://greasyfork.org/scripts/xxxxx) 点击安装
-
-**方式二：GitHub Release**
-
-1. 前往 [Releases](https://github.com/your-username/douyin-fire-helper/releases) 下载最新 `.user.js` 文件
+1. 前往 [Code](https://github.com/zk26/Douyin_FireHelper) 下载最新 `.user.js` 文件
 2. 打开 Tampermonkey 管理面板
 3. 点击 "+" 新建脚本
 4. 粘贴代码并保存

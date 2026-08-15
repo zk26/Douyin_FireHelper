@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         续火花助手
 // @namespace    http://tampermonkey.net/
-// @version      4.0.0
+// @version      4.0.1
 // @description  每天自动发送续火消息，支持多用户、火花天数识别、自动重试、后端回调、历史日志等等
 // @author       zk26
 // @match        https://www.douyin.com/chat*
@@ -29,8 +29,11 @@
                 const d = new Date();
                 return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             }
-            static esc(str) { const el = document.createElement('span');
-                el.textContent = str; return el.innerHTML; }
+            static esc(str) {
+                const el = document.createElement('span');
+                el.textContent = str;
+                return el.innerHTML;
+            }
             static httpGet(url, { timeout = 10000, responseType = 'text' } = {}) {
                 return new Promise((ok, fail) => {
                     const t = setTimeout(() => fail(new Error('请求超时')), timeout);
@@ -38,12 +41,18 @@
                         method: 'GET',
                         url,
                         responseType,
-                        onload(r) { clearTimeout(t);
-                            r.status >= 200 && r.status < 300 ? ok(responseType === 'json' ? r.response : r.responseText) : fail(new Error(`HTTP ${r.status}`)); },
-                        onerror() { clearTimeout(t);
-                            fail(new Error('网络错误')); },
-                        ontimeout() { clearTimeout(t);
-                            fail(new Error('请求超时')); },
+                        onload(r) {
+                            clearTimeout(t);
+                            r.status >= 200 && r.status < 300 ? ok(responseType === 'json' ? r.response : r.responseText) : fail(new Error(`HTTP ${r.status}`));
+                        },
+                        onerror() {
+                            clearTimeout(t);
+                            fail(new Error('网络错误'));
+                        },
+                        ontimeout() {
+                            clearTimeout(t);
+                            fail(new Error('请求超时'));
+                        },
                     });
                 });
             }
@@ -55,12 +64,18 @@
                         url,
                         headers: { 'Content-Type': 'application/json' },
                         data: JSON.stringify(data),
-                        onload(r) { clearTimeout(t);
-                            ok(r); },
-                        onerror() { clearTimeout(t);
-                            fail(new Error('网络错误')); },
-                        ontimeout() { clearTimeout(t);
-                            fail(new Error('请求超时')); },
+                        onload(r) {
+                            clearTimeout(t);
+                            ok(r);
+                        },
+                        onerror() {
+                            clearTimeout(t);
+                            fail(new Error('网络错误'));
+                        },
+                        ontimeout() {
+                            clearTimeout(t);
+                            fail(new Error('请求超时'));
+                        },
                     });
                 });
             }
@@ -94,8 +109,11 @@
         // ============================================================
         class EventBus {#
             m = new Map();
-            on(e, fn) { if (!this.#m.has(e)) this.#m.set(e, new Set());
-                this.#m.get(e).add(fn); return () => this.off(e, fn); }
+            on(e, fn) {
+                if (!this.#m.has(e)) this.#m.set(e, new Set());
+                this.#m.get(e).add(fn);
+                return () => this.off(e, fn);
+            }
             off(e, fn) { this.#m.get(e) ? .delete(fn); }
             emit(e, d) { this.#m.get(e) ? .forEach(fn => { try { fn(d); } catch (err) { console.error(`[DFH:${e}]`, err); } }); }
         }
@@ -119,8 +137,10 @@
             static COLORS = { DEBUG: '#8e8e93', INFO: '#ff9f0a', SUCCESS: '#30d158', WARNING: '#ff9f0a', ERROR: '#ff453a' };#
             bus;#
             minLevel;
-            constructor(bus, minLevel = 'DEBUG') { this.#bus = bus;
-                this.#minLevel = Logger.LEVELS[minLevel] || 0; }#
+            constructor(bus, minLevel = 'DEBUG') {
+                this.#bus = bus;
+                this.#minLevel = Logger.LEVELS[minLevel] || 0;
+            }#
             log(lv, msg) {
                 if (Logger.LEVELS[lv] < this.#minLevel) return;
                 const entry = { time: new Date().toLocaleTimeString(), level: lv, msg };
@@ -169,9 +189,11 @@
             s;#
             l;#
             d = {};
-            constructor(s, l) { this.#s = s;
+            constructor(s, l) {
+                this.#s = s;
                 this.#l = l;
-                this.load(); }
+                this.load();
+            }
             get data() { return this.#d; }
             load() {
                 let sv = this.#s.get('userConfig', null);
@@ -186,11 +208,15 @@
                 const ld = this.#s.get('lastFireDate', null);
                 if (ld !== null) this.#d.lastFireDate = ld;
             }
-            save() { this.#s.set('userConfig', this.#d);
+            save() {
+                this.#s.set('userConfig', this.#d);
                 this.#s.set('fireDays', this.#d.fireDays);
-                this.#s.set('lastFireDate', this.#d.lastFireDate); }
-            update(p) { Object.assign(this.#d, p);
-                this.save(); }
+                this.#s.set('lastFireDate', this.#d.lastFireDate);
+            }
+            update(p) {
+                Object.assign(this.#d, p);
+                this.save();
+            }
             get hasTargetUsers() { return !!(this.#d.targetUsernames && this.#d.targetUsernames.trim()); }
         }
 
@@ -225,8 +251,10 @@
         class DOM {#
             sel;#
             log;
-            constructor(sel, log) { this.#sel = sel;
-                this.#log = log; }
+            constructor(sel, log) {
+                this.#sel = sel;
+                this.#log = log;
+            }
             $(s, p = document) { return p.querySelector(s); }
             $$(s, p = document) { return [...p.querySelectorAll(s)]; }
 
@@ -236,12 +264,14 @@
                     const el = parent.querySelector(sel);
                     if (el) return resolve(el);
                     let settled = false;
-                    const done = (v) => { if (settled) return;
+                    const done = (v) => {
+                        if (settled) return;
                         settled = true;
                         obs.disconnect();
                         clearInterval(poller);
                         clearTimeout(t);
-                        resolve(v); };
+                        resolve(v);
+                    };
                     const obs = new MutationObserver(() => { const f = parent.querySelector(sel); if (f) done(f); });
                     obs.observe(parent === document ? document.documentElement : parent, { childList: true, subtree: true, attributes: true });
                     const poller = setInterval(() => { const f = parent.querySelector(sel); if (f) done(f); }, 300);
@@ -271,7 +301,8 @@
                 ['keydown', 'keypress', 'keyup'].forEach(t => this.keyEvent(editor, t, 'Enter'));
             }
             shiftEnter(el) {
-                ['keydown', 'keypress', 'keyup'].forEach(t => this.keyEvent(el, t, 'Enter', { shiftKey: true })); }
+                ['keydown', 'keypress', 'keyup'].forEach(t => this.keyEvent(el, t, 'Enter', { shiftKey: true }));
+            }
 
             /** 可滚动容器查找 */
             findScrollContainer(itemSel) {
@@ -332,11 +363,14 @@
                         if (!ok) {
                             const sel = window.getSelection();
                             let range = sel.rangeCount > 0 && editor.contains(sel.anchorNode) ?
-                                sel.getRangeAt(0) : (() => { const r = document.createRange();
+                                sel.getRangeAt(0) : (() => {
+                                    const r = document.createRange();
                                     r.selectNodeContents(editor);
                                     r.collapse(false);
                                     sel.removeAllRanges();
-                                    sel.addRange(r); return r; })();
+                                    sel.addRange(r);
+                                    return r;
+                                })();
                             const tn = document.createTextNode(lines[li][ci]);
                             range.insertNode(tn);
                             range.setStartAfter(tn);
@@ -347,9 +381,11 @@
                         }
                         await Utils.sleep(30 + Math.random() * 50);
                     }
-                    if (li < lines.length - 1) { await Utils.sleep(30);
+                    if (li < lines.length - 1) {
+                        await Utils.sleep(30);
                         this.shiftEnter(editor);
-                        await Utils.sleep(50); }
+                        await Utils.sleep(50);
+                    }
                 }
                 editor.dispatchEvent(new Event('change', { bubbles: true }));
                 return true;
@@ -389,8 +425,10 @@
             log;#
             cur = 'Idle';#
             ac = null;
-            constructor(bus, l) { this.#bus = bus;
-                this.#log = l; }
+            constructor(bus, l) {
+                this.#bus = bus;
+                this.#log = l;
+            }
             static T = Object.freeze({
                 Idle: ['SearchingUser'],
                 SearchingUser: ['SendMessage', 'Idle'],
@@ -408,12 +446,24 @@
                 this.#bus.emit('state:change', { from, to });
                 return true;
             }
-            reset() { this.#cancelTimeout(); const p = this.#cur;
-                this.#cur = 'Idle'; if (p !== 'Idle') this.#bus.emit('state:change', { from: p, to: 'Idle' }); }
-            forceIdle() { this.#cancelTimeout(); const p = this.#cur;
-                this.#cur = 'Idle'; if (p !== 'Idle') this.#bus.emit('state:change', { from: p, to: 'Idle' }); }#
-            cancelTimeout() { if (this.#ac) { this.#ac.abort();
-                    this.#ac = null; } }
+            reset() {
+                this.#cancelTimeout();
+                const p = this.#cur;
+                this.#cur = 'Idle';
+                if (p !== 'Idle') this.#bus.emit('state:change', { from: p, to: 'Idle' });
+            }
+            forceIdle() {
+                this.#cancelTimeout();
+                const p = this.#cur;
+                this.#cur = 'Idle';
+                if (p !== 'Idle') this.#bus.emit('state:change', { from: p, to: 'Idle' });
+            }#
+            cancelTimeout() {
+                if (this.#ac) {
+                    this.#ac.abort();
+                    this.#ac = null;
+                }
+            }
         }
 
         // ============================================================
@@ -423,9 +473,11 @@
             app;#
             dom;#
             log;
-            constructor(app) { this.#app = app;
+            constructor(app) {
+                this.#app = app;
                 this.#dom = app.dom;
-                this.#log = app.logger; }
+                this.#log = app.logger;
+            }
 
             async search(username) {
                 this.#log.info(`搜索用户: ${username}`);
@@ -587,8 +639,10 @@
         class ChatService {#
             dom;#
             sel;
-            constructor(app) { this.#dom = app.dom;
-                this.#sel = app.selector; }
+            constructor(app) {
+                this.#dom = app.dom;
+                this.#sel = app.selector;
+            }
 
             /** 读取当前聊天用户的火花状态（天数 / 重燃中） */
             readFireDays() {
@@ -657,8 +711,10 @@
 
             async scrollTop() {
                 const list = await this.#dom.wait('[class*="conversationConversationListwrapper"], [class*="conversation-list"]', 3000);
-                if (list) { await Utils.sleep(300);
-                    list.scrollTop = 0; }
+                if (list) {
+                    await Utils.sleep(300);
+                    list.scrollTop = 0;
+                }
             }
 
             /** P0: 验证当前聊天对象 — 严格匹配避免误发 */
@@ -712,9 +768,11 @@
             app;#
             dom;#
             log;
-            constructor(app) { this.#app = app;
+            constructor(app) {
+                this.#app = app;
                 this.#dom = app.dom;
-                this.#log = app.logger; }
+                this.#log = app.logger;
+            }
 
             async send(username) {
                 this.#log.info(`发送: ${username}`);
@@ -740,8 +798,10 @@
                 const cleanMsg = msg.replace(/^[\s\u3000\uFEFF\xA0\n\r]+/, '').replace(/[\s\u3000\uFEFF\xA0\n\r]+$/, '');
 
                 let editor = await this.#app.chatService.findEditor(10000);
-                if (!editor) { await Utils.sleep(2000);
-                    editor = await this.#app.chatService.findEditor(5000); }
+                if (!editor) {
+                    await Utils.sleep(2000);
+                    editor = await this.#app.chatService.findEditor(5000);
+                }
                 if (!editor) return { ok: false, error: '未找到输入框' };
 
                 const inputOk = await this.#dom.inputMsg(editor, cleanMsg);
@@ -835,23 +895,34 @@
             l;#
             m = new Map();#
             f = new Set();
-            constructor(s, l) { this.#s = s;
-                this.#l = l; const sv = this.#s.get('retryMap', {});
+            constructor(s, l) {
+                this.#s = s;
+                this.#l = l;
+                const sv = this.#s.get('retryMap', {});
                 this.#m = new Map(Object.entries(sv));
-                this.#f = new Set(this.#s.get('failedToday', [])); }#
-            save() { this.#s.set('retryMap', Object.fromEntries(this.#m));
-                this.#s.set('failedToday', [...this.#f]); }
+                this.#f = new Set(this.#s.get('failedToday', []));
+            }#
+            save() {
+                this.#s.set('retryMap', Object.fromEntries(this.#m));
+                this.#s.set('failedToday', [...this.#f]);
+            }
             cnt(u) { return this.#m.get(u) || 0; }
             failed(u) { return this.#f.has(u); }
             canRetry(u, max) { return !this.#f.has(u) && this.cnt(u) < max; }
-            inc(u) { this.#m.set(u, this.cnt(u) + 1);
-                this.#save(); }
-            markFail(u) { this.#f.add(u);
+            inc(u) {
+                this.#m.set(u, this.cnt(u) + 1);
                 this.#save();
-                this.#l.warn(`${u} 耗尽重试`); }
-            reset() { this.#m.clear();
+            }
+            markFail(u) {
+                this.#f.add(u);
+                this.#save();
+                this.#l.warn(`${u} 耗尽重试`);
+            }
+            reset() {
+                this.#m.clear();
                 this.#f.clear();
-                this.#save(); }
+                this.#save();
+            }
             get failedList() { return [...this.#f]; }
                 /** P2: 指数退避延迟 */
             getDelay(u) { return Math.min(30000, 2000 * Math.pow(2, this.cnt(u))); }
@@ -860,13 +931,17 @@
         class CallbackService {#
             app;#
             log;
-            constructor(app) { this.#app = app;
-                this.#log = app.logger; }
+            constructor(app) {
+                this.#app = app;
+                this.#log = app.logger;
+            }
             async notify(payload) {
                 const c = this.#app.config.data;
                 if (!c.enableCallback) return;
-                try { await Utils.httpPost(`http://localhost:${c.callbackPort || 7788}/done`, {...payload, ts: Date.now() });
-                    this.#log.info('已通知后端'); } catch (e) { this.#log.error(`回调失败: ${e.message}`); }
+                try {
+                    await Utils.httpPost(`http://localhost:${c.callbackPort || 7788}/done`, {...payload, ts: Date.now() });
+                    this.#log.info('已通知后端');
+                } catch (e) { this.#log.error(`回调失败: ${e.message}`); }
             }
         }
 
@@ -875,21 +950,35 @@
             l;
             sent = [];#
             d = '';
-            constructor(s, l) { this.#s = s;
+            constructor(s, l) {
+                this.#s = s;
                 this.#l = l;
-                this.#d = this.#s.get('statsDate', ''); const t = Utils.today(); if (this.#d !== t) { this.sent = [];
+                this.#d = this.#s.get('statsDate', '');
+                const t = Utils.today();
+                if (this.#d !== t) {
+                    this.sent = [];
                     this.#d = t;
-                    this.#save(); } else { this.sent = this.#s.get('sentToday', []); } }#
-            save() { this.#s.set('sentToday', this.sent);
-                this.#s.set('statsDate', this.#d); }
-            mark(u) { if (!this.sent.includes(u)) { this.sent.push(u);
-                    this.#save(); } }
+                    this.#save();
+                } else { this.sent = this.#s.get('sentToday', []); }
+            }#
+            save() {
+                this.#s.set('sentToday', this.sent);
+                this.#s.set('statsDate', this.#d);
+            }
+            mark(u) {
+                if (!this.sent.includes(u)) {
+                    this.sent.push(u);
+                    this.#save();
+                }
+            }
             isSent(u) { return this.sent.includes(u); }
             get count() { return this.sent.length; }
             rate(total) { return total ? `${Math.round((this.sent.length / total) * 100)}%` : '0%'; }
-            reset() { this.sent = [];
+            reset() {
+                this.sent = [];
                 this.#d = Utils.today();
-                this.#save(); }
+                this.#save();
+            }
             get date() { return this.#d; }
         }
 
@@ -899,9 +988,11 @@
             max;#
             queue = [];#
             flushTimer = null;
-            constructor(s, l, max = 300) { this.#s = s;
+            constructor(s, l, max = 300) {
+                this.#s = s;
                 this.#l = l;
-                this.#max = max; }
+                this.#max = max;
+            }
             add(msg, level = 'INFO') {
                 // P2: 批量写入 - 先缓存，2秒后统一写
                 this.#queue.push({ ts: new Date().toISOString(), level, msg });
@@ -919,12 +1010,17 @@
                 this.#queue = [];
             }
             all() { this.#flush(); return this.#s.get('historyLogs', []); }
-            clear() { this.#queue = [];
+            clear() {
+                this.#queue = [];
                 this.#s.set('historyLogs', []);
-                this.#l.info('历史日志已清空'); }
-            export () { const logs = this.all(); const t = logs.map(l => `${new Date(l.ts).toLocaleString()} [${l.level}] ${l.msg}`).join('\n');
+                this.#l.info('历史日志已清空');
+            }
+            export () {
+                const logs = this.all();
+                const t = logs.map(l => `${new Date(l.ts).toLocaleString()} [${l.level}] ${l.msg}`).join('\n');
                 Utils.download(`续火日志_${Utils.today()}.txt`, t);
-                this.#l.info('日志已导出'); }
+                this.#l.info('日志已导出');
+            }
         }
 
         // ============================================================
@@ -938,48 +1034,80 @@
             cdTmr = null;#
             next = null;#
             ready = false;
-            constructor(app) { this.#app = app;
+            constructor(app) {
+                this.#app = app;
                 this.#cfg = app.config;
-                this.#log = app.logger; }
+                this.#log = app.logger;
+            }
             get nextTime() { return this.#next; }
             start() {
                 const d = this.#cfg.data.initialDelay || 0;
-                if (d > 0) { this.#log.info(`等待 ${d}s`);
-                    setTimeout(() => { this.#ready = true;
+                if (d > 0) {
+                    this.#log.info(`等待 ${d}s`);
+                    setTimeout(() => {
+                        this.#ready = true;
                         this.#log.info('初始延迟结束');
-                        this.#startAuto(); }, d * 1000); } else { this.#ready = true;
-                    this.#startAuto(); }
+                        this.#startAuto();
+                    }, d * 1000);
+                } else {
+                    this.#ready = true;
+                    this.#startAuto();
+                }
                 this.#next = this.#calcNext();
                 this.#startCD(this.#next);
             }
-            stop() { clearInterval(this.#autoTmr);
+            stop() {
+                clearInterval(this.#autoTmr);
                 clearInterval(this.#cdTmr);
-                this.#autoTmr = this.#cdTmr = null; }
-            refresh() { this.#next = this.#calcNext();
-                this.#startCD(this.#next); }
+                this.#autoTmr = this.#cdTmr = null;
+            }
+            refresh() {
+                this.#next = this.#calcNext();
+                this.#startCD(this.#next);
+            }
             check() { this.#check(); }#
-            startAuto() { clearInterval(this.#autoTmr);
+            startAuto() {
+                clearInterval(this.#autoTmr);
                 this.#autoTmr = setInterval(() => this.#check(), 15000);
-                this.#check(); }#
+                this.#check();
+            }#
             check() {
                 if (!this.#ready || this.#app.paused || !this.#app.autoSendEnabled || this.#app.fsm.state !== 'Idle') return;
                 const t = Utils.today();
-                if (this.#app.stats.date !== t) { this.#log.info('新的一天');
-                    this.#app.resetDay(); }
+                if (this.#app.stats.date !== t) {
+                    this.#log.info('新的一天');
+                    this.#app.resetDay();
+                }
                 if (this.#app.config.hasTargetUsers) { if (this.#app.parsedUsers.every(u => this.#app.stats.isSent(u) || this.#app.retry.failed(u))) { this.#app.checkDone(); return; } } else if (this.#app.stats.count > 0) return;
-                if (this.#shouldSend()) { this.#log.info('发送时间到');
-                    this.#app.startSend(); }
+                if (this.#shouldSend()) {
+                    this.#log.info('发送时间到');
+                    this.#app.startSend();
+                }
             }#
             shouldSend() { const c = this.#cfg.data; return c.sendTimeRandom ? this.#inRange(c.sendTimeRangeStart, c.sendTimeRangeEnd) : this.#past(c.sendTime); }#
             past(ts) { const { h, m, s } = Utils.tp(ts); const n = new Date(); return n.getHours() > h || (n.getHours() === h && (n.getMinutes() > m || (n.getMinutes() === m && n.getSeconds() >= s))); }#
-            inRange(a, b) { const { h: sh, m: sm } = Utils.tp(a); const { h: eh, m: em } = Utils.tp(b); const n = new Date().getHours() * 60 + new Date().getMinutes(); const s = sh * 60 + sm,
-                    e = eh * 60 + em; return e > s ? (n >= s && n <= e) : (n >= s || n <= e); }#
+            inRange(a, b) {
+                const { h: sh, m: sm } = Utils.tp(a);
+                const { h: eh, m: em } = Utils.tp(b);
+                const n = new Date().getHours() * 60 + new Date().getMinutes();
+                const s = sh * 60 + sm,
+                    e = eh * 60 + em;
+                return e > s ? (n >= s && n <= e) : (n >= s || n <= e);
+            }#
             calcNext() {
                 const c = this.#cfg.data;
                 const now = new Date();
-                if (c.sendTimeRandom) { const { h: sh, m: sm } = Utils.tp(c.sendTimeRangeStart); const { h: eh, m: em } = Utils.tp(c.sendTimeRangeEnd); const sM = sh * 60 + sm,
-                        eM = eh * 60 + em; let rM = eM > sM ? sM + Math.floor(Math.random() * (eM - sM)) : sM + Math.floor(Math.random() * (1440 - sM + eM)); const t = new Date(now);
-                    t.setHours(Math.floor(rM / 60) % 24, rM % 60, 0, 0); if (t <= now) t.setDate(t.getDate() + 1); return t; }
+                if (c.sendTimeRandom) {
+                    const { h: sh, m: sm } = Utils.tp(c.sendTimeRangeStart);
+                    const { h: eh, m: em } = Utils.tp(c.sendTimeRangeEnd);
+                    const sM = sh * 60 + sm,
+                        eM = eh * 60 + em;
+                    let rM = eM > sM ? sM + Math.floor(Math.random() * (eM - sM)) : sM + Math.floor(Math.random() * (1440 - sM + eM));
+                    const t = new Date(now);
+                    t.setHours(Math.floor(rM / 60) % 24, rM % 60, 0, 0);
+                    if (t <= now) t.setDate(t.getDate() + 1);
+                    return t;
+                }
                 const { h, m, s } = Utils.tp(c.sendTime);
                 const t = new Date(now);
                 t.setHours(h, m, s, 0);
@@ -988,14 +1116,21 @@
             }#
             startCD(target) {
                 clearInterval(this.#cdTmr);
-                const fn = () => { const diff = target - new Date(); if (diff <= 0) { this.#app.ui.setCD('00:00:00');
+                const fn = () => {
+                    const diff = target - new Date();
+                    if (diff <= 0) {
+                        this.#app.ui.setCD('00:00:00');
                         clearInterval(this.#cdTmr);
                         this.#check();
                         this.#next = this.#calcNext();
-                        this.#startCD(this.#next); return; } const hh = Math.floor(diff / 3600000),
+                        this.#startCD(this.#next);
+                        return;
+                    }
+                    const hh = Math.floor(diff / 3600000),
                         mm = Math.floor((diff % 3600000) / 60000),
                         ss = Math.floor((diff % 60000) / 1000);
-                    this.#app.ui.setCD(`${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`); };
+                    this.#app.ui.setCD(`${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`);
+                };
                 fn();
                 this.#cdTmr = setInterval(fn, 1000);
             }
@@ -1017,19 +1152,32 @@
             constructor(app) { this.#app = app; }
             get# log() { return this.#app.logger; }
 
-            create() { this.#injectCSS();
+            create() {
+                this.#injectCSS();
                 this.#mainPanel();
                 this.#reopenBtn();
-                this.#log.info('UI 已创建'); }
-            show() { if (this.#panel) { this.#panel.style.display = '';
-                    this.#reopen.style.display = 'none'; } }
-            hide() { if (this.#panel) { this.#panel.style.display = 'none';
-                    this.#reopen.style.display = 'flex'; } }
+                this.#log.info('UI 已创建');
+            }
+            show() {
+                if (this.#panel) {
+                    this.#panel.style.display = '';
+                    this.#reopen.style.display = 'none';
+                }
+            }
+            hide() {
+                if (this.#panel) {
+                    this.#panel.style.display = 'none';
+                    this.#reopen.style.display = 'flex';
+                }
+            }
 
             setStatus(t, c) { const el = document.getElementById('dfh-st'); if (el) { el.textContent = t; if (c) el.style.color = c; } }
-            setUserStatus(t, ok) { const el = document.getElementById('dfh-ust'); if (!el) return;
+            setUserStatus(t, ok) {
+                const el = document.getElementById('dfh-ust');
+                if (!el) return;
                 el.textContent = t;
-                el.style.color = ok === true ? '#30d158' : ok === false ? '#ff453a' : '#8e8e93'; }
+                el.style.color = ok === true ? '#30d158' : ok === false ? '#ff453a' : '#8e8e93';
+            }
             setProgress(t) { const el = document.getElementById('dfh-prog'); if (el) el.textContent = t; }
             setRetry(t) { const el = document.getElementById('dfh-rty'); if (el) el.textContent = t; }
             setFireDays(d) { const el = document.getElementById('dfh-fd'); if (el) el.textContent = d; }
@@ -1051,13 +1199,22 @@
                 const badge = document.getElementById('dfh-asbadge');
                 if (badge) badge.style.display = enabled ? 'none' : '';
             }
-            addLog(e) { const c = document.getElementById('dfh-lg'); if (!c) return; const d = document.createElement('div');
+            addLog(e) {
+                const c = document.getElementById('dfh-lg');
+                if (!c) return;
+                const d = document.createElement('div');
                 d.className = 'dfh-le';
                 d.innerHTML = `<span class="dfh-lt">${e.time}</span><span class="dfh-lm" style="color:${Logger.COLORS[e.level]||'#ff9f0a'}">${e.msg}</span>`;
-                c.prepend(d); while (c.children.length > 30) c.removeChild(c.lastChild); }
-            updateProg() { const all = this.#app.parsedUsers; const s = this.#app.stats.count; const t = all.length;
+                c.prepend(d);
+                while (c.children.length > 30) c.removeChild(c.lastChild);
+            }
+            updateProg() {
+                const all = this.#app.parsedUsers;
+                const s = this.#app.stats.count;
+                const t = all.length;
                 this.setProgress(`${s} / ${t}`);
-                this.setStatus(s >= t && t > 0 ? '已完成' : t > 0 ? `进行中` : '未发送', s >= t && t > 0 ? '#30d158' : '#ff453a'); }
+                this.setStatus(s >= t && t > 0 ? '已完成' : t > 0 ? `进行中` : '未发送', s >= t && t > 0 ? '#30d158' : '#ff453a');
+            }
             notify(text) { if (typeof GM_notification !== 'undefined') try { GM_notification({ title: '抖音续火助手', text, timeout: 3000 }); } catch (_) { GM_notification(text, '抖音续火助手'); } }
 
             #
@@ -1153,9 +1310,13 @@
                 p.style.width = '380px';
                 const savedTop = c.panelTop,
                     savedLeft = c.panelLeft;
-                if (savedTop != null && savedLeft != null) { p.style.top = savedTop + 'px';
-                    p.style.left = savedLeft + 'px'; } else { p.style.top = '20px';
-                    p.style.right = '20px'; }
+                if (savedTop != null && savedLeft != null) {
+                    p.style.top = savedTop + 'px';
+                    p.style.left = savedLeft + 'px';
+                } else {
+                    p.style.top = '20px';
+                    p.style.right = '20px';
+                }
                 p.innerHTML = `
 <div class="dfh-hdr" data-drag="1">
   <div class="dfh-traffic"><div class="dfh-dot dfh-dot-r" data-close="1" title="关闭"></div><div class="dfh-dot dfh-dot-y" data-close="1" title="最小化"></div><div class="dfh-dot dfh-dot-g" title="最大化"></div></div>
@@ -1198,28 +1359,42 @@
                 this.#panel = p;
                 p.querySelector('#dfh-pb').onclick = () => this.#app.togglePause();
                 p.querySelector('#dfh-asb').onclick = () => this.#app.toggleAutoSend();
-                p.querySelector('#dfh-rst').onclick = () => { this.#app.stats.reset();
+                p.querySelector('#dfh-rst').onclick = () => {
+                    this.#app.stats.reset();
                     this.#app.retry.reset();
                     this.#app.messageService.resetDay();
                     this.updateProg();
-                    this.#log.info('记录已重置'); };
+                    this.#log.info('记录已重置');
+                };
                 p.querySelector('#dfh-cfg').onclick = () => this.#settings();
                 p.querySelector('#dfh-his').onclick = () => this.#history();
                 p.querySelector('#dfh-usr').onclick = () => this.#userSelect();
                 p.querySelector('#dfh-day').onclick = () => this.#modDays();
-                p.querySelector('#dfh-clr').onclick = () => { this.#app.stats.reset();
+                p.querySelector('#dfh-clr').onclick = () => {
+                    this.#app.stats.reset();
                     this.#app.retry.reset();
                     this.#app.messageService.resetDay();
                     this.#app.hist.clear();
                     this.updateProg();
-                    this.#log.info('已清空'); };
-                p.querySelector('#dfh-rstall').onclick = () => { if (confirm('确定重置所有配置？')) { this.#app.storage.clear();
-                        location.reload(); } };
+                    this.#log.info('已清空');
+                };
+                p.querySelector('#dfh-rstall').onclick = () => {
+                    if (confirm('确定重置所有配置？')) {
+                        this.#app.storage.clear();
+                        location.reload();
+                    }
+                };
                 const themeBtn = p.querySelector('#dfh-theme');
-                const applyTheme = (theme) => { if (theme === 'light') { document.documentElement.classList.add('dfh-light');
-                        themeBtn.textContent = '☀️'; } else { document.documentElement.classList.remove('dfh-light');
-                        themeBtn.textContent = '🌙'; }
-                    this.#app.config.update({ theme }); };
+                const applyTheme = (theme) => {
+                    if (theme === 'light') {
+                        document.documentElement.classList.add('dfh-light');
+                        themeBtn.textContent = '☀️';
+                    } else {
+                        document.documentElement.classList.remove('dfh-light');
+                        themeBtn.textContent = '🌙';
+                    }
+                    this.#app.config.update({ theme });
+                };
                 themeBtn.onclick = () => applyTheme(this.#app.config.data.theme === 'light' ? 'dark' : 'light');
                 applyTheme(this.#app.config.data.theme || 'dark');
                 p.querySelectorAll('[data-close]').forEach(el => el.onclick = () => this.hide());
@@ -1297,11 +1472,15 @@
                 p.querySelectorAll('[data-close]').forEach(el => el.onclick = () => p.remove());
                 const navs = p.querySelectorAll('.dfh-ni'),
                     tabs = p.querySelectorAll('.dfh-tab');
-                navs.forEach(n => n.onclick = () => { navs.forEach(x => x.classList.remove('ac'));
+                navs.forEach(n => n.onclick = () => {
+                    navs.forEach(x => x.classList.remove('ac'));
                     n.classList.add('ac');
-                    tabs.forEach(t => t.style.display = t.dataset.tab === n.dataset.tab ? '' : 'none'); });
-                p.querySelector('#dfh-x-tr').onchange = e => { p.querySelector('#dfh-x-ft').style.display = e.target.checked ? 'none' : '';
-                    p.querySelector('#dfh-x-rt').style.display = e.target.checked ? '' : 'none'; };
+                    tabs.forEach(t => t.style.display = t.dataset.tab === n.dataset.tab ? '' : 'none');
+                });
+                p.querySelector('#dfh-x-tr').onchange = e => {
+                    p.querySelector('#dfh-x-ft').style.display = e.target.checked ? 'none' : '';
+                    p.querySelector('#dfh-x-rt').style.display = e.target.checked ? '' : 'none';
+                };
                 p.querySelector('#dfh-save').onclick = () => {
                     const v = s => p.querySelector(s) ? .value ? ? '';
                     const ck = s => p.querySelector(s) ? .checked ? ? false;

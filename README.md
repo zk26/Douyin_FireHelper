@@ -34,7 +34,7 @@
 
 ## 安装
 
-### 1. 安装油猴扩展
+### 1. 安装油猴扩展（不会的参考其他帖子）
 
 - [Tampermonkey](https://www.tampermonkey.net/) (推荐)
 - [Violentmonkey](https://violentmonkey.github.io/)

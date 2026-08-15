@@ -1,4 +1,4 @@
-// ==UserScript==
+// ==UserScript== 
 // @name         续火花助手
 // @namespace    http://tampermonkey.net/
 // @version      4.0.1

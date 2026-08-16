@@ -584,7 +584,15 @@
     async build(username) {
       const c = this.#app.config.data;
       const streak = this.#app.getStreak(username);
-      const days = streak.days || this.#app.getUserFireDays(username) || 1;
+      // 优先使用从抖音读取的天数，其次本地存储的用户天数，最后才是全局默认天数
+      let days;
+      if (streak.days > 0) {
+        days = streak.days;
+      } else if (this.#app.hasUserFireDays(username)) {
+        days = this.#app.getUserFireDays(username);
+      } else {
+        days = c.fireDays || 1;
+      }
       let msg;
       if (streak.reignite) {
         // 重燃状态：使用重燃消息模板
@@ -1184,10 +1192,10 @@
     }
 
     #modDays() {
-      const d = prompt('手动设置火花天数：\n\n用于消息模板中的 [天数] 占位符\n例如：消息模板 "续火 | 火花已续 [天数] 天"\n设置天数为 100，就会发送 "续火 | 火花已续 100 天"\n\n注意：脚本会自动从抖音读取实际火花天数，此功能为手动覆盖', this.#app.config.data.fireDays);
+      const d = prompt('手动设置默认火花天数：\n\n用于消息模板中的 [天数] 占位符\n例如：消息模板 "续火 | 火花已续 [天数] 天"\n设置天数为 100，就会发送 "续火 | 火花已续 100 天"\n\n注意：\n- 脚本会优先使用从抖音自动识别的火花天数\n- 此设置仅在无法识别到用户天数时生效', this.#app.config.data.fireDays);
       if (d === null) return; const n = parseInt(d, 10);
       if (isNaN(n) || n < 0) { this.#log.error('无效数字'); return; }
-      this.#app.config.update({ fireDays: n, lastFireDate: Utils.today() }); this.setFireDays(n); this.#log.success(`火花天数已设置为: ${n}`);
+      this.#app.config.update({ fireDays: n, lastFireDate: Utils.today() }); this.setFireDays(n); this.#log.success(`默认火花天数已设置为: ${n}`);
     }
   }
 
@@ -1318,6 +1326,7 @@
       return unsent[0];
     }
     getUserFireDays(u) { return u && this.#fireMap[u] ? this.#fireMap[u] : this.config.data.fireDays; }
+    hasUserFireDays(u) { return !!(u && this.#fireMap[u]); }
     setUserFireDays(u, d) { if (d > 0 && u) { this.#fireMap[u] = d; this.storage.set('userFireDays', this.#fireMap); } }
     getStreak(u) { return this.#streakMap.get(u) || { days: this.getUserFireDays(u), reignite: null, expiring: null }; }
     setStreak(u, streak) { this.#streakMap.set(u, streak); if (streak.days > 0) this.setUserFireDays(u, streak.days); }

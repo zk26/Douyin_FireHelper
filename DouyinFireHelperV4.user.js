@@ -984,6 +984,7 @@
   <button id="dfh-cfg" class="dfh-btn dfh-btn-s">⚙ 设置</button>
   <button id="dfh-his" class="dfh-btn dfh-btn-s">📋 日志</button>
   <button id="dfh-usr" class="dfh-btn dfh-btn-s">👥 用户</button>
+  <button id="dfh-day" class="dfh-btn dfh-btn-s" title="手动设置火花天数，用于消息模板中的[天数]占位符">📅 天数</button>
 </div>
 <div class="dfh-sep"></div>
 <div class="dfh-log-w">
@@ -998,6 +999,7 @@
       p.querySelector('#dfh-cfg').onclick = () => this.#settings();
       p.querySelector('#dfh-his').onclick = () => this.#history();
       p.querySelector('#dfh-usr').onclick = () => this.#userSelect();
+      p.querySelector('#dfh-day').onclick = () => this.#modDays();
       const themeBtn = p.querySelector('#dfh-theme');
       const applyTheme = (theme) => { if (theme === 'light') { document.documentElement.classList.add('dfh-light'); themeBtn.textContent = '☀️'; } else { document.documentElement.classList.remove('dfh-light'); themeBtn.textContent = '🌙'; } this.#app.config.update({ theme }); };
       themeBtn.onclick = () => applyTheme(this.#app.config.data.theme === 'light' ? 'dark' : 'light');
@@ -1179,6 +1181,13 @@
       p.querySelector('#dfh-urescan').onclick = () => { doScan(); };
       p.querySelector('#dfh-uok').onclick = () => { const sel = [...listEl.querySelectorAll('.dfh-ucb:checked')].map(cb => cb.value); this.#app.config.update({ targetUsernames: sel.join('\n') }); this.#app.parseUsers(); this.updateProg(); this.#log.info(sel.length ? `已更新 ${sel.length} 个用户` : '已清空用户'); p.remove(); };
       updateSelCount();
+    }
+
+    #modDays() {
+      const d = prompt('手动设置火花天数：\n\n用于消息模板中的 [天数] 占位符\n例如：消息模板 "续火 | 火花已续 [天数] 天"\n设置天数为 100，就会发送 "续火 | 火花已续 100 天"\n\n注意：脚本会自动从抖音读取实际火花天数，此功能为手动覆盖', this.#app.config.data.fireDays);
+      if (d === null) return; const n = parseInt(d, 10);
+      if (isNaN(n) || n < 0) { this.#log.error('无效数字'); return; }
+      this.#app.config.update({ fireDays: n, lastFireDate: Utils.today() }); this.setFireDays(n); this.#log.success(`火花天数已设置为: ${n}`);
     }
   }
 

@@ -957,7 +957,7 @@
       else { p.style.top = '20px'; p.style.right = '20px'; }
       p.innerHTML = `
 <div class="dfh-hdr" data-drag="1">
-  <div class="dfh-traffic"><div class="dfh-dot dfh-dot-r" data-close="1" title="关闭"></div><div class="dfh-dot dfh-dot-y" data-close="1" title="最小化"></div><div class="dfh-dot dfh-dot-g" title="最大化"></div></div>
+  <div class="dfh-traffic"><div class="dfh-dot dfh-dot-r" data-minimize="1" title="最小化"></div><div class="dfh-dot dfh-dot-y" data-minimize="1" title="最小化"></div><div class="dfh-dot dfh-dot-g" data-minimize="1" title="最小化"></div></div>
   <div class="dfh-tl"><span class="dfh-tt">续火花助手</span><span class="dfh-badge dfh-badge-o" id="dfh-pbadge" style="display:none">今日暂停</span><span class="dfh-badge" id="dfh-asbadge" style="display:none;background:rgba(10,132,255,0.12);color:#0a84ff">定时关</span><button id="dfh-theme" style="margin-left:auto;background:var(--dfh-sf2);border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;color:var(--dfh-t1);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.2s" title="切换主题">🌙</button></div>
   <div class="dfh-st">V4 · DouyinFireHelper</div>
 </div>
@@ -984,7 +984,6 @@
   <button id="dfh-cfg" class="dfh-btn dfh-btn-s">⚙ 设置</button>
   <button id="dfh-his" class="dfh-btn dfh-btn-s">📋 日志</button>
   <button id="dfh-usr" class="dfh-btn dfh-btn-s">👥 用户</button>
-  <button id="dfh-clr" class="dfh-btn dfh-btn-s">🗑 清空</button>
 </div>
 <div class="dfh-sep"></div>
 <div class="dfh-log-w">
@@ -999,12 +998,11 @@
       p.querySelector('#dfh-cfg').onclick = () => this.#settings();
       p.querySelector('#dfh-his').onclick = () => this.#history();
       p.querySelector('#dfh-usr').onclick = () => this.#userSelect();
-      p.querySelector('#dfh-clr').onclick = () => { this.#app.stats.reset(); this.#app.retry.reset(); this.#app.messageService.resetDay(); this.#app.hist.clear(); this.updateProg(); this.#log.info('已清空'); };
       const themeBtn = p.querySelector('#dfh-theme');
       const applyTheme = (theme) => { if (theme === 'light') { document.documentElement.classList.add('dfh-light'); themeBtn.textContent = '☀️'; } else { document.documentElement.classList.remove('dfh-light'); themeBtn.textContent = '🌙'; } this.#app.config.update({ theme }); };
       themeBtn.onclick = () => applyTheme(this.#app.config.data.theme === 'light' ? 'dark' : 'light');
       applyTheme(this.#app.config.data.theme || 'dark');
-      p.querySelectorAll('[data-close]').forEach(el => el.onclick = () => this.hide());
+      p.querySelectorAll('[data-minimize]').forEach(el => el.onclick = () => this.hide());
       UI.#initDrag();
     }
 
@@ -1012,6 +1010,28 @@
       const old = document.getElementById('dfh-reopen'); if (old) old.remove();
       const b = document.createElement('div'); b.id = 'dfh-reopen'; b.textContent = '🔥'; b.title = '打开续火助手';
       b.onclick = () => this.show(); document.body.appendChild(b); this.#reopen = b;
+      // 让缩小图标可以拖拽
+      let dragging = false, ox = 0, oy = 0;
+      b.addEventListener('mousedown', e => {
+        dragging = true;
+        const r = b.getBoundingClientRect();
+        ox = e.clientX - r.left; oy = e.clientY - r.top;
+        b.style.transition = 'none';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const x = Math.max(0, Math.min(e.clientX - ox, window.innerWidth - b.offsetWidth));
+        const y = Math.max(0, Math.min(e.clientY - oy, window.innerHeight - b.offsetHeight));
+        b.style.left = x + 'px'; b.style.top = y + 'px'; b.style.right = 'auto';
+      });
+      document.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false;
+        b.style.transition = '';
+        document.body.style.userSelect = '';
+      });
     }
 
     static #initDrag() {

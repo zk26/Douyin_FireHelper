@@ -1346,8 +1346,8 @@
       return Math.max(...days);
     }
     #updFire() {
-      // P2: 不再累加全局 fireDays，改用用户天数最大值
-      this.ui.setFireDays(this.getMaxFireDays());
+      // 面板显示手动设置的默认天数
+      this.ui.setFireDays(this.config.data.fireDays);
     }
 
     togglePause() {

@@ -984,9 +984,7 @@
   <button id="dfh-cfg" class="dfh-btn dfh-btn-s">⚙ 设置</button>
   <button id="dfh-his" class="dfh-btn dfh-btn-s">📋 日志</button>
   <button id="dfh-usr" class="dfh-btn dfh-btn-s">👥 用户</button>
-  <button id="dfh-day" class="dfh-btn dfh-btn-s">📅 天数</button>
   <button id="dfh-clr" class="dfh-btn dfh-btn-s">🗑 清空</button>
-  <button id="dfh-rstall" class="dfh-btn dfh-btn-s">🔧 重置配置</button>
 </div>
 <div class="dfh-sep"></div>
 <div class="dfh-log-w">
@@ -1001,9 +999,7 @@
       p.querySelector('#dfh-cfg').onclick = () => this.#settings();
       p.querySelector('#dfh-his').onclick = () => this.#history();
       p.querySelector('#dfh-usr').onclick = () => this.#userSelect();
-      p.querySelector('#dfh-day').onclick = () => this.#modDays();
       p.querySelector('#dfh-clr').onclick = () => { this.#app.stats.reset(); this.#app.retry.reset(); this.#app.messageService.resetDay(); this.#app.hist.clear(); this.updateProg(); this.#log.info('已清空'); };
-      p.querySelector('#dfh-rstall').onclick = () => { if (confirm('确定重置所有配置？')) { this.#app.storage.clear(); location.reload(); } };
       const themeBtn = p.querySelector('#dfh-theme');
       const applyTheme = (theme) => { if (theme === 'light') { document.documentElement.classList.add('dfh-light'); themeBtn.textContent = '☀️'; } else { document.documentElement.classList.remove('dfh-light'); themeBtn.textContent = '🌙'; } this.#app.config.update({ theme }); };
       themeBtn.onclick = () => applyTheme(this.#app.config.data.theme === 'light' ? 'dark' : 'light');
@@ -1055,7 +1051,7 @@
 <div class="dfh-tab" data-tab="basic"><div class="dfh-sec"><h4>🕒 发送时间</h4><label class="dfh-chk"><input type="checkbox" id="dfh-x-tr" ${c.sendTimeRandom?'checked':''}> 随机时间</label><div id="dfh-x-ft" style="${c.sendTimeRandom?'display:none':''}"><label class="dfh-lab">时间 (HH:mm:ss)</label><input class="dfh-inp" id="dfh-x-t" value="${c.sendTime}"></div><div id="dfh-x-rt" style="${c.sendTimeRandom?'':'display:none'}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label class="dfh-lab">开始</label><input class="dfh-inp" id="dfh-x-ts" value="${c.sendTimeRangeStart}"></div><div><label class="dfh-lab">结束</label><input class="dfh-inp" id="dfh-x-te" value="${c.sendTimeRangeEnd}"></div></div></div></div><div class="dfh-sec"><h4>⏱ 启动</h4><label class="dfh-lab">加载等待秒数</label><input class="dfh-inp" type="number" id="dfh-x-dl" min="0" max="300" value="${c.initialDelay}"></div><div class="dfh-sec"><h4>🔄 重试</h4><label class="dfh-lab">每用户最大重试</label><input class="dfh-inp" type="number" id="dfh-x-rc" min="1" max="20" value="${c.maxRetryCount}"></div><div class="dfh-sec"><h4>🔗 后端回调</h4><label class="dfh-chk"><input type="checkbox" id="dfh-x-cb" ${c.enableCallback?'checked':''}> 启用</label><label class="dfh-lab">端口</label><input class="dfh-inp" type="number" id="dfh-x-cp" value="${c.callbackPort}"></div></div>
 <div class="dfh-tab" data-tab="msg" style="display:none"><div class="dfh-sec"><h4>📝 自定义消息</h4><textarea class="dfh-inp dfh-ta" id="dfh-x-msg" rows="4" placeholder="输入自定义消息内容">${c.customMessage || '续火 | 火花已续 [天数] 天'}</textarea><div style="color:var(--dfh-t3);font-size:11px;margin-top:8px;line-height:1.6"><b>可用占位符：</b><br><code style="background:var(--dfh-sf2);padding:2px 6px;border-radius:4px">[天数]</code> — 火花持续天数（按用户自动匹配）</div></div><div class="dfh-sec"><h4>🔥 重燃好友消息</h4><textarea class="dfh-inp dfh-ta" id="dfh-x-rmsg" rows="3" placeholder="重燃状态下的自定义消息">${c.reigniteMessage || '续火 | 重燃中 [重燃进度]'}</textarea><div style="color:var(--dfh-t3);font-size:11px;margin-top:8px;line-height:1.6"><b>可用占位符：</b><br><code style="background:var(--dfh-sf2);padding:2px 6px;border-radius:4px">[重燃进度]</code> — 重燃进度（如 1/3）<br><code style="background:var(--dfh-sf2);padding:2px 6px;border-radius:4px">[重燃当前]</code> — 当前次数<br><code style="background:var(--dfh-sf2);padding:2px 6px;border-radius:4px">[重燃总数]</code> — 总次数<br><code style="background:var(--dfh-sf2);padding:2px 6px;border-radius:4px">[天数]</code> — 火花天数</div></div><div class="dfh-sec"><h4>⚠️ 火花即将消失消息</h4><textarea class="dfh-inp dfh-ta" id="dfh-x-emsg" rows="3" placeholder="火花即将消失时的自定义消息">${c.expiringMessage || '续火 | 火花即将消失 [剩余天数]'}</textarea><div style="color:var(--dfh-t3);font-size:11px;margin-top:8px;line-height:1.6"><b>可用占位符：</b><br><code style="background:var(--dfh-sf2);padding:2px 6px;border-radius:4px">[剩余天数]</code> — 火花剩余天数<br><code style="background:var(--dfh-sf2);padding:2px 6px;border-radius:4px">[天数]</code> — 火花天数</div></div></div>
 <div class="dfh-tab" data-tab="usr" style="display:none"><div class="dfh-sec"><h4>👥 目标用户</h4><label class="dfh-lab">用户名 (一行一个)</label><textarea class="dfh-inp dfh-ta" id="dfh-x-usr" rows="6" placeholder="每行一个用户名">${c.targetUsernames}</textarea><div style="margin-top:12px"><label class="dfh-lab">发送模式</label><div style="display:flex;gap:16px"><label class="dfh-chk"><input type="radio" name="dfh-mm" value="sequential" ${c.multiUserMode==='sequential'?'checked':''}> 顺序</label><label class="dfh-chk"><input type="radio" name="dfh-mm" value="random" ${c.multiUserMode==='random'?'checked':''}> 随机</label></div></div></div></div>
-<div class="dfh-tab" data-tab="adv" style="display:none"><div class="dfh-sec"><h4>⚡ 性能</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label class="dfh-lab">搜索超时(ms)</label><input class="dfh-inp" type="number" id="dfh-x-sto" value="${c.userSearchTimeout}"></div><div><label class="dfh-lab">最大日志数</label><input class="dfh-inp" type="number" id="dfh-x-ml" value="${c.maxHistoryLogs}"></div></div></div></div>
+<div class="dfh-tab" data-tab="adv" style="display:none"><div class="dfh-sec"><h4>⚡ 性能</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label class="dfh-lab">搜索超时(ms)</label><input class="dfh-inp" type="number" id="dfh-x-sto" value="${c.userSearchTimeout}"></div><div><label class="dfh-lab">最大日志数</label><input class="dfh-inp" type="number" id="dfh-x-ml" value="${c.maxHistoryLogs}"></div></div></div><div class="dfh-sec"><h4>⚠️ 危险操作</h4><button id="dfh-rstall" class="dfh-btn dfh-btn-r" style="width:100%;padding:10px">🔧 重置所有配置</button><div style="color:var(--dfh-t3);font-size:11px;margin-top:8px">重置后将清除所有设置并刷新页面</div></div></div>
 </div></div>
 <div class="dfh-ov-foot"><button id="dfh-save" class="dfh-btn dfh-btn-b" style="width:100%;padding:10px;font-size:13px">💾 保存设置</button></div>`;
       document.body.appendChild(p);
@@ -1074,6 +1070,7 @@
         this.#app.config.update({ sendTimeRandom: isR, sendTime: v('#dfh-x-t'), sendTimeRangeStart: v('#dfh-x-ts'), sendTimeRangeEnd: v('#dfh-x-te'), initialDelay: parseInt(v('#dfh-x-dl'), 10) || 0, maxRetryCount: Math.max(1, Math.min(20, parseInt(v('#dfh-x-rc'), 10) || 3)), enableCallback: ck('#dfh-x-cb'), callbackPort: parseInt(v('#dfh-x-cp'), 10) || 7788, customMessage: v('#dfh-x-msg') || '续火 | 火花已续 [天数] 天', reigniteMessage: v('#dfh-x-rmsg') || '续火 | 重燃中 [重燃进度]', expiringMessage: v('#dfh-x-emsg') || '续火 | 火花即将消失 [剩余天数]', targetUsernames: v('#dfh-x-usr'), multiUserMode: rd('dfh-mm') || 'sequential', userSearchTimeout: parseInt(v('#dfh-x-sto'), 10) || 15000, maxHistoryLogs: parseInt(v('#dfh-x-ml'), 10) || 300 });
         this.#app.parseUsers(); this.#app.scheduler.refresh(); p.remove(); this.#log.success('设置已保存');
       };
+      p.querySelector('#dfh-rstall').onclick = () => { if (confirm('确定重置所有配置？\n\n这将清除所有设置并刷新页面。')) { this.#app.storage.clear(); location.reload(); } };
     }
 
     #history() {
@@ -1162,13 +1159,6 @@
       p.querySelector('#dfh-urescan').onclick = () => { doScan(); };
       p.querySelector('#dfh-uok').onclick = () => { const sel = [...listEl.querySelectorAll('.dfh-ucb:checked')].map(cb => cb.value); this.#app.config.update({ targetUsernames: sel.join('\n') }); this.#app.parseUsers(); this.updateProg(); this.#log.info(sel.length ? `已更新 ${sel.length} 个用户` : '已清空用户'); p.remove(); };
       updateSelCount();
-    }
-
-    #modDays() {
-      const d = prompt('火花天数:', this.#app.config.data.fireDays);
-      if (d === null) return; const n = parseInt(d, 10);
-      if (isNaN(n) || n < 0) { this.#log.error('无效数字'); return; }
-      this.#app.config.update({ fireDays: n, lastFireDate: Utils.today() }); this.setFireDays(n); this.#log.success(`火花天数: ${n}`);
     }
   }
 

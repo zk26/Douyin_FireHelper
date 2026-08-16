@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/your-username/douyin-fire-helper/releases"><img src="https://img.shields.io/github/v/release/your-username/douyin-fire-helper?style=flat-square" alt="Version"></a>
-  <a href="https://github.com/your-username/douyin-fire-helper/blob/main/LICENSE"><img src="https://img.shields.io/github/license/your-username/douyin-fire-helper?style=flat-square" alt="License"></a>
+  <a href="https://github.com/zk26/Douyin_FireHelper/releases"><img src="https://img.shields.io/github/v/release/zk26/Douyin_FireHelper?style=flat-square" alt="Version"></a>
+  <a href="https://github.com/zk26/Douyin_FireHelper/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zk26/Douyin_FireHelper?style=flat-square" alt="License"></a>
   <img src="https://img.shields.io/badge/Tampermonkey-✅-brightgreen?style=flat-square" alt="Tampermonkey">
   <img src="https://img.shields.io/badge/平台-抖音-blue?style=flat-square" alt="Platform">
 </p>
@@ -50,7 +50,7 @@
 
 **方式三：Raw 链接**
 
-直接访问 `https://raw.githubusercontent.com/your-username/douyin-fire-helper/main/DouyinFireHelperV3.user.js`，油猴会自动提示安装
+直接访问 `https://raw.githubusercontent.com/zk26/Douyin_FireHelper/main/DouyinFireHelper.user.js`，油猴会自动提示安装
 
 ## 使用方法
 
@@ -66,19 +66,22 @@
 
 ```
 ┌─────────────────────────────────────┐
-│  续火花助手                          │
+│  ● ● ●  续火花助手                   │
 │  ─────────────────────────────────── │
 │  今日状态    │  用户状态              │
 │  发送进度    │  重试次数              │
 │  ─────────────────────────────────── │
 │  下次发送    │  倒计时    │  火花天数  │
 │  ─────────────────────────────────── │
-│  [暂停] [重置]                       │
-│  [设置] [日志] [用户] [天数] [清空]   │
+│  [暂停] [定时] [重置]                 │
+│  [设置] [日志] [用户] [天数]          │
 │  ─────────────────────────────────── │
 │  操作日志                            │
 │  > 系统已就绪                        │
 └─────────────────────────────────────┘
+
+点击三个彩色圆点可最小化面板
+最小化后火焰图标可拖拽移动
 ```
 
 ### 消息模板
@@ -169,16 +172,25 @@ A: 火花天数从抖音页面读取，如果显示异常可以点击 **📅 天
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/douyin-fire-helper.git
+git clone https://github.com/zk26/Douyin_FireHelper.git
 
 # 安装脚本
-# 将 DouyinFireHelperV3.user.js 复制到 Tampermonkey
+# 将 DouyinFireHelper.user.js 复制到 Tampermonkey
 
 # 测试
 # 打开 https://www.douyin.com/chat 查看效果
 ```
 
 ## 更新日志
+
+### v5.2.1
+
+- 修复多用户顺序发送卡住的问题
+- 优化发送等待时间，加快多用户处理速度
+- 简化界面按钮布局
+- 优化天数逻辑：优先使用自动识别的天数
+- 三个彩色圆点都可最小化面板
+- 最小化图标支持拖拽移动
 
 ### v4.0.0
 
@@ -209,8 +221,8 @@ git clone https://github.com/your-username/douyin-fire-helper.git
 
 ## 支持
 
-- [提交 Issue](https://github.com/your-username/douyin-fire-helper/issues)
-- [提交 PR](https://github.com/your-username/douyin-fire-helper/pulls)
+- [提交 Issue](https://github.com/zk26/Douyin_FireHelper/issues)
+- [提交 PR](https://github.com/zk26/Douyin_FireHelper/pulls)
 
 ---
 

@@ -584,12 +584,10 @@
     async build(username) {
       const c = this.#app.config.data;
       const streak = this.#app.getStreak(username);
-      // 优先使用从抖音读取的天数，其次本地存储的用户天数，最后才是全局默认天数
+      // 优先使用从抖音读取的天数，未识别到时使用手动设置的默认天数
       let days;
       if (streak.days > 0) {
         days = streak.days;
-      } else if (this.#app.hasUserFireDays(username)) {
-        days = this.#app.getUserFireDays(username);
       } else {
         days = c.fireDays || 1;
       }

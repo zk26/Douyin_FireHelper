@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         续火花助手
 // @namespace    http://tampermonkey.net/
-// @version      4.0.0
+// @version      5.2.1
 // @description  每天自动发送续火消息，支持多用户、火花天数识别、自动重试、后端回调、历史日志。
 // @author       zk26
 // @match        https://www.douyin.com/chat*

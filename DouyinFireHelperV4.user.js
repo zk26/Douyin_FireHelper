@@ -345,13 +345,13 @@
       try {
         const si = await this.#findSearchInput();
         if (!si) return { ok: false, error: '未找到搜索框' };
-        si.focus(); this.#dom.click(si); await Utils.sleep(100);
-        this.#dom.setReactVal(si, ''); await Utils.sleep(200);
+        si.focus(); this.#dom.click(si); await Utils.sleep(50);
+        this.#dom.setReactVal(si, ''); await Utils.sleep(100);
         await this.#dom.typeChars(si, username);
         this.#log.info(`已输入: ${username}`);
 
         // P1: 等待搜索结果出现（而非立即点击）
-        await Utils.sleep(1000);
+        await Utils.sleep(500);
 
         // P1: 检测"未找到相关用户"等永久失败情况
         const noResult = this.#checkNoUser();
@@ -640,17 +640,17 @@
       if (!editor) return { ok: false, error: '未找到输入框' };
 
       const inputOk = await this.#dom.inputMsg(editor, cleanMsg);
-      if (!inputOk) { await Utils.sleep(1000); const retry = await this.#dom.inputMsg(editor, cleanMsg); if (!retry) return { ok: false, error: '输入失败' }; }
+      if (!inputOk) { await Utils.sleep(500); const retry = await this.#dom.inputMsg(editor, cleanMsg); if (!retry) return { ok: false, error: '输入失败' }; }
 
       // P2: 验证输入是否真正写入
-      await Utils.sleep(200);
+      await Utils.sleep(100);
       const written = editor.innerText?.trim() || '';
       if (!written) {
         this.#log.warn('输入验证：编辑器仍为空，再次尝试');
         await this.#dom.inputMsg(editor, cleanMsg);
       }
 
-      await Utils.sleep(500);
+      await Utils.sleep(200);
       this.#dom.enterToSend(editor);
       this.#log.info('发送中...');
 
@@ -662,8 +662,8 @@
         return html.length === 0 || html === '<span></span>' || html === '<p></p>';
       };
 
-      // 快速检查：等 2 秒看编辑器是否清空
-      await Utils.sleep(2000);
+      // 快速检查：等 1 秒看编辑器是否清空
+      await Utils.sleep(1000);
       let sent = false;
       if (isEditorEmpty(editor)) {
         sent = true;
@@ -675,7 +675,7 @@
                         [...document.querySelectorAll('button')].find(b => b.textContent?.includes('发送') && b.offsetParent !== null && !b.disabled);
         if (sendBtn) {
           this.#dom.click(sendBtn);
-          await Utils.sleep(1500);
+          await Utils.sleep(800);
           sent = isEditorEmpty(editor);
           this.#log.info(sent ? '通过发送按钮发送成功' : '发送按钮点击后仍有内容');
         } else {
@@ -685,13 +685,15 @@
 
       // P1: 发送后校验 - 检测最新消息是否是自己发的
       if (sent) {
-        await Utils.sleep(500);
+        await Utils.sleep(300);
         sent = await this.#verifyLastMessage(cleanMsg);
       }
 
-      const nd = await this.#app.chatService.readFireDaysForUser(username);
-      if (nd.days > 0 || nd.reignite || nd.expiring) { this.#app.setStreak(username, nd); }
-      await this.#app.chatService.scrollTop();
+      // 异步更新火花天数和UI，不阻塞返回
+      this.#app.chatService.readFireDaysForUser(username).then(nd => {
+        if (nd.days > 0 || nd.reignite || nd.expiring) { this.#app.setStreak(username, nd); }
+      }).catch(() => {});
+      this.#app.chatService.scrollTop().catch(() => {});
       this.#app.ui.setUserStatus(`已发送: ${username}`, true);
       this.#app.ui.notify('续火消息发送成功！');
       return { ok: true };
@@ -1349,10 +1351,10 @@
         if (s.ok) {
           this.bus.emit('message:sent', { username: u });
           if (this.fsm.can('Success')) this.fsm.go('Success');
-          await Utils.sleep(3000);
+          await Utils.sleep(500);
           if (this.#paused) return;
           this.fsm.forceIdle();
-          if (this.getNext()) { if (this.fsm.can('SearchingUser')) this.fsm.go('SearchingUser'); setTimeout(() => this.#next(), 100); } else this.#checkDone();
+          if (this.getNext()) { if (this.fsm.can('SearchingUser')) this.fsm.go('SearchingUser'); setTimeout(() => this.#next(), 50); } else this.#checkDone();
         } else { this.bus.emit('message:failed', { username: u, error: s.error || '发送失败' }); }
       } finally {
         this.#running = false;

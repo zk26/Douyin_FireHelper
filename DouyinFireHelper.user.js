@@ -626,11 +626,14 @@
       this.#app.ui.setUserStatus(`发送中: ${username}`, null);
 
       const fd = await this.#app.chatService.readFireDaysForUser(username);
+      // 无论是否识别到天数，都更新 streak 状态
+      this.#app.setStreak(username, fd);
       if (fd.days > 0 || fd.reignite || fd.expiring) {
-        this.#app.setStreak(username, fd);
         if (fd.reignite) this.#log.info(`${username} 重燃中: ${fd.reignite.current}/${fd.reignite.total}`);
         else if (fd.expiring) this.#log.info(`${username} 火花即将消失: ${fd.expiring.remaining}天后`);
         else this.#log.info(`${username} 火花天数: ${fd.days}`);
+      } else {
+        this.#log.info(`${username} 未识别到火花天数，将使用默认天数`);
       }
 
       if (!this.#app.chatService.verifyChatTarget(username)) {
@@ -1329,11 +1332,17 @@
     hasUserFireDays(u) { return !!(u && this.#fireMap[u]); }
     setUserFireDays(u, d) { if (d > 0 && u) { this.#fireMap[u] = d; this.storage.set('userFireDays', this.#fireMap); } }
     getStreak(u) { return this.#streakMap.get(u) || { days: this.getUserFireDays(u), reignite: null, expiring: null }; }
-    setStreak(u, streak) { this.#streakMap.set(u, streak); if (streak.days > 0) this.setUserFireDays(u, streak.days); }
+    setStreak(u, streak) { 
+      this.#streakMap.set(u, streak); 
+      // 只有当识别到有效天数时才更新用户天数记录
+      if (streak.days > 0) {
+        this.setUserFireDays(u, streak.days);
+      }
+    }
     /** P2: 获取最大火花天数（用于UI显示） */
     getMaxFireDays() {
       const days = Object.values(this.#fireMap);
-      if (days.length === 0) return this.config.data.fireDays;
+      if (days.length === 0) return this.config.data.fireDays || 0; // 没有识别到任何天数时返回默认天数
       return Math.max(...days);
     }
     #updFire() {
